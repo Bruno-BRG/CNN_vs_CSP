@@ -21,35 +21,35 @@ kanban-plugin: basic
 
 ## Fase 0 — Setup (para não virar bagunça)
 **Objetivo:** projeto organizado e reprodutível.
-- [ ] Estrutura de pastas: `data/raw`, `data/processed`, `src`, `configs`, `results`, `figures`, `tables`
-- [ ] `configs/paper1.yaml` (banda, janela, split, seeds, hparams)
-- [ ] padrão de logs e salvamento (CSV/JSON por sujeito + seeds)
+- [x] Estrutura de pastas: `data/raw`, `data/processed`, `src`, `configs`, `results`, `figures`, `tables`
+- [x] `configs/paper1.yaml` (banda, janela, split, seeds, hparams)
+- [x] padrão de logs e salvamento (CSV/JSON por sujeito + seeds)
 
 ✅ Entregável: pastas + config + template de resultados.
 
 ---
 
 ## Fase 1 — Dados (carregar e confiar)
-- [ ] Loader por sujeito/sessão
-- [ ] checar labels (L/R), eventos/cue, fs, shape
-- [ ] sanity checks (contagem de trials, plots cru, NaN/inf)
+- [x] Loader por sujeito/sessão
+- [x] checar labels (L/R), eventos/cue, fs, shape
+- [x] sanity checks (contagem de trials, plots cru, NaN/inf)
 
 ✅ Entregável: loader validado + prints/plots de confirmação.
 
 ---
 
 ## Fase 2 — Pré-processamento
-- [ ] bandpass 8–30 Hz (Butterworth 3ª ordem)
-- [ ] epoch 0–4s pós-cue
-- [ ] normalização (se usar) com **fit no treino**
-- [ ] PSD antes/depois + checar alinhamento do cue
+- [x] bandpass 8–30 Hz (Butterworth 3ª ordem)
+- [x] epoch 0.7s pós-cue
+- [x] normalização (se usar) com **fit no treino**
+- [x] PSD antes/depois + checar alinhamento do cue
 
 ✅ Entregável: `preprocess()` que devolve `(X, y)` pronto.
 
 ---
 
 ## Fase 3 — Split (P0 do paper)
-- [ ] Escolher split: sessão→sessão **OU** k-fold estrito
+- [x] Escolher split: sessão→sessão **OU** k-fold estrito
 - [ ] escrever regra anti-vazamento (vai pro texto do paper)
 - [ ] `get_splits(subject)` pronto
 
