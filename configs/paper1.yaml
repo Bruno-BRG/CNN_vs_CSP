@@ -1,0 +1,54 @@
+# Configuration for Paper 1 - CNN vs CSP
+
+# Frequency band configuration
+banda:
+  type: "EEG"
+  frequency_range: [8, 30]  # Hz
+  filters:
+    - name: "lowpass"
+      cutoff: 30
+    - name: "highpass"
+      cutoff: 0.5
+
+# Sliding window configuration
+janela:
+  size: 500  # samples
+  step: 125   # samples
+  overlap: 0.9
+
+# Data split configuration
+split:
+  train: 0.7
+  validation: 0.15
+  test: 0.15
+  random_state: 42
+  stratified: true
+
+# Random seeds for reproducibility
+seeds:
+  numpy: 42
+  random: 42
+  tensorflow: 42
+  
+
+# Hyperparameters
+hparams:
+  model:
+    type: "CNN"
+    layers: [64, 128, 256]
+    kernel_size: 3
+    dropout: 0.5
+    activation: "relu"
+  
+  training:
+    epochs: 100
+    batch_size: 32
+    learning_rate: 0.001
+    optimizer: "adam"
+    loss: "categorical_crossentropy"
+    metrics: ["accuracy"]
+  
+  regularization:
+    l1: 0.0001
+    l2: 0.0001
+    early_stopping_patience: 10
