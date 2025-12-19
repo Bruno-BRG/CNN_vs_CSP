@@ -50,37 +50,37 @@ kanban-plugin: basic
 
 ## Fase 3 — Split (P0 do paper)
 - [x] Escolher split: sessão→sessão **OU** k-fold estrito
-- [ ] escrever regra anti-vazamento (vai pro texto do paper)
-- [ ] `get_splits(subject)` pronto
+- [x] escrever regra anti-vazamento (vai pro texto do paper)
+- [x] `get_splits(subject)` pronto
 
 ✅ Entregável: split fixado + texto do split.
 
 ---
 
 ## Fase 4 — Baseline CSP + LDA
-- [ ] CSP (8 comps) fit só no treino
-- [ ] features (log-variance)
-- [ ] LDA treino/teste
-- [ ] salvar por sujeito: acc, kappa, confusão, y_true/y_pred
+- [x] CSP (8 comps) fit só no treino
+- [x] features (log-variance)
+- [x] LDA treino/teste
+- [x] salvar por sujeito: acc, kappa, confusão, y_true/y_pred
 
 ✅ Entregável: baseline 1 sujeito → depois todos.
 
 ---
 
 ## Fase 5 — EEGNet
-- [ ] padronizar shape de entrada
-- [ ] treinar EEGNet com hparams fixos
-- [ ] salvar outputs iguais ao baseline
-- [ ] rodar 3 seeds (mínimo)
+- [x] padronizar shape de entrada
+- [x] treinar EEGNet com hparams fixos
+- [x] salvar outputs iguais ao baseline
+- [x] rodar 3 seeds (mínimo)
 
 ✅ Entregável: EEGNet 1 sujeito → depois todos (+ seeds).
 
 ---
 
 ## Fase 6 — Comparação + estatística
-- [ ] tabela por sujeito (acc/kappa CSP vs EEGNet)
-- [ ] média±dp + variação por seed
-- [ ] teste pareado (Wilcoxon ou t pareado)
+- [x] tabela por sujeito (acc/kappa CSP vs EEGNet)
+- [x] média±dp + variação por seed
+- [x] teste pareado (Wilcoxon ou t pareado)
 
 ✅ Entregável: `results_summary.csv` + p-valor + agregados.
 
@@ -88,15 +88,15 @@ kanban-plugin: basic
 
 ## Fase 7 — Figuras e tabelas finais
 **Figuras mínimas:**
-- [ ] pipeline CSP-LDA vs EEGNet
-- [ ] arquitetura EEGNet (blocos)
-- [ ] boxplot/violin acc e/ou kappa
-- [ ] matriz de confusão agregada
+- [x] pipeline CSP-LDA vs EEGNet
+- [x] arquitetura EEGNet (blocos)
+- [x] boxplot/violin acc e/ou kappa
+- [x] matriz de confusão agregada
 
 **Tabelas mínimas:**
-- [ ] setup experimental (banda, janela, split, n)
-- [ ] resultados por sujeito (acc/kappa)
-- [ ] média±dp + estatística
+- [x] setup experimental (banda, janela, split, n)
+- [x] resultados por sujeito (acc/kappa)
+- [x] média±dp + estatística
 
 ✅ Entregável: `figures/` + `tables/` prontas pra colar no artigo.
 
@@ -106,16 +106,16 @@ kanban-plugin: basic
 
 ## Fase W0 — Preparar o “esqueleto” do paper (antes de escrever de verdade)
 **Objetivo:** criar um arquivo base e só ir preenchendo.
-- [ ] Criar `paper_draft.md` (ou LaTeX) com:
-  - [ ] Título provisório
-  - [ ] Resumo + Palavras-chave (placeholders)
-  - [ ] Introdução
-  - [ ] Metodologia
-  - [ ] Resultados
-  - [ ] Discussão
-  - [ ] Conclusão
-  - [ ] Referências
-  - [ ] Apêndice (opcional: configs, hparams)
+- [x] Criar `paper_draft.md` (ou LaTeX) com:
+  - [x] Título provisório
+  - [x] Resumo + Palavras-chave (placeholders)
+  - [x] Introdução
+  - [x] Metodologia
+  - [x] Resultados
+  - [x] Discussão
+  - [x] Conclusão
+  - [x] Referências
+  - [x] Apêndice (opcional: configs, hparams)
 
 ✅ Entregável: arquivo de artigo com seções prontas.
 
@@ -125,27 +125,27 @@ kanban-plugin: basic
 > Isso é o mais fácil porque você só descreve o que implementou.
 
 ### 1) Dataset e tarefa
-- [ ] descrever dataset (BCI IV-2a) e a tarefa (L vs R)
-- [ ] descrever número de sujeitos e canais usados (o que você de fato rodou)
+- [x] descrever dataset (BCI IV-2a) e a tarefa (L vs R)
+- [x] descrever número de sujeitos e canais usados (o que você de fato rodou)
 
 ### 2) Pré-processamento
-- [ ] banda 8–30 Hz, ordem do filtro, notch (se houver)
-- [ ] janela 0–4 s pós-cue
-- [ ] normalização (se houver), com regra: fit no treino
+- [x] banda 8–30 Hz, ordem do filtro, notch (se houver)
+- [x] janela 0–4 s pós-cue
+- [x] normalização (se houver), com regra: fit no treino
 
 ### 3) Protocolo de avaliação (parte mais importante)
-- [ ] descrever split com precisão (sessão→sessão ou CV)
-- [ ] reforçar anti-vazamento (CSP e normalização só no treino)
-- [ ] descrever seeds e repetições
+- [x] descrever split com precisão (sessão→sessão ou CV)
+- [x] reforçar anti-vazamento (CSP e normalização só no treino)
+- [x] descrever seeds e repetições
 
 ### 4) Modelos comparados
-- [ ] CSP (8 comps) + extração de features + LDA
+- [x] CSP (8 comps) + extração de features + LDA
 - [ ] EEGNet (arquitetura resumida + hparams principais)
 
 ### 5) Métricas e estatística
-- [ ] accuracy, kappa, confusão
-- [ ] teste pareado (Wilcoxon/t)
-- [ ] como agregou entre sujeitos
+- [x] accuracy, kappa, confusão
+- [x] teste pareado (Wilcoxon/t)
+- [x] como agregou entre sujeitos
 
 ✅ Entregável: seção Metodologia completa e reprodutível.
 
@@ -154,13 +154,13 @@ kanban-plugin: basic
 ## Fase W2 — Resultados (texto curto + figuras/tabelas)
 > Regra: aqui você NÃO explica “por quê”, só mostra “o quê”.
 
-- [ ] inserir Tabela de resultados por sujeito (acc/kappa)
-- [ ] inserir média±dp + teste estatístico
-- [ ] inserir figuras (boxplot + confusão)
-- [ ] descrever em 5–10 linhas:
-  - [ ] quem ganhou (em média)
-  - [ ] quantos sujeitos melhoraram/pioraram
-  - [ ] estabilidade por seed (se reportar)
+- [x] inserir Tabela de resultados por sujeito (acc/kappa)
+- [x] inserir média±dp + teste estatístico
+- [x] inserir figuras (boxplot + confusão)
+- [x] descrever em 5–10 linhas:
+  - [x] quem ganhou (em média)
+  - [x] quantos sujeitos melhoraram/pioraram
+  - [x] estabilidade por seed (se reportar)
 
 ✅ Entregável: seção Resultados “publicável”.
 

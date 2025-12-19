@@ -1,0 +1,5 @@
+Métrica,Mean,Std,Min,Max
+Accuracy (CSP),0.6057,0.0782,0.5208,0.7639
+Accuracy (EEGNet),0.5062,0.0359,0.4167,0.5764
+Kappa (CSP),0.2114,0.1564,0.0417,0.5278
+Kappa (EEGNet),0.0123,0.0718,-0.1667,0.1528

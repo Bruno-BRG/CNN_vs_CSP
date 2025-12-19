@@ -1,0 +1,11 @@
+Parâmetro,Valor
+Dataset,BCICIV 2a
+Subjects,9
+Classes,"2 (LEFT, RIGHT)"
+Sampling Rate,250 Hz
+Filter Band,8-30 Hz
+Filter Order,4
+Trial Duration,4s (201 amostras)
+Total Trials,1296 (9 subjects × 144 trials)
+Train/Test Split,Leave-One-Subject-Out (LOSO)
+Cross-validation,9 folds (1 por sujeito)
