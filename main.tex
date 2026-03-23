@@ -1,0 +1,336 @@
+\documentclass[conference]{IEEEtran}
+\IEEEoverridecommandlockouts
+
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithmic}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{url}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+
+\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
+    T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+
+% -------------------------------------------------------------------------
+% TITLE, AUTHORS AND AFFILIATIONS
+% -------------------------------------------------------------------------
+\title{Deep Learning versus Classical Methods in BCI:\\
+A Systematic Evaluation of Motor Imagery Classification}
+
+\author{
+\IEEEauthorblockN{Bruno Rocha Guimarães}
+\IEEEauthorblockA{\textit{Centro Universitário Jorge Amado (UNIJORGE)}\\
+Salvador, BA, Brazil\\
+brg.brunorocha@gmail.com}
+}
+
+% =========================================================================
+\begin{document}
+
+\maketitle
+
+% -------------------------------------------------------------------------
+% ABSTRACT
+% -------------------------------------------------------------------------
+\begin{abstract}
+Brain-Computer Interfaces (BCI) based on motor imagery (MI) rely on efficient extraction of oscillatory features and cross-subject generalization. This paper presents a systematic comparative evaluation between the classical Common Spatial Patterns with Linear Discriminant Analysis (CSP-LDA) method and a deep learning approach using Compact Convolutional Neural Networks (EEGNet), focusing on the cross-subject generalization problem. Using the \textit{BCI Competition IV-2a} dataset, we establish a rigorous data leakage prevention pipeline with training-fold-only normalization and a Leave-One-Subject-Out (LOSO) cross-validation protocol. Our central hypothesis is that, under limited data and high inter-subject variability, classical covariance-based methods offer greater generalization robustness than compact CNNs trained from scratch. Results confirm this hypothesis: CSP-LDA achieved a mean accuracy of $60.57\%$ ($\kappa = 0.2114$) versus $50.62\%$ ($\kappa = 0.0123$) for EEGNet, evidencing the challenges of learning inter-subject invariant representations with restricted data volumes.
+\end{abstract}
+
+\begin{IEEEkeywords}
+Brain-Computer Interface, Motor Imagery, EEGNet, CSP-LDA, LOSO Cross-Validation, Deep Learning, EEG
+\end{IEEEkeywords}
+
+% =========================================================================
+% 1. INTRODUCTION
+% =========================================================================
+\section{Introduction}
+
+\subsection{Context and Motivation}
+
+EEG-based Brain-Computer Interfaces (BCI) provide a communication and control channel independent of the neuromuscular system \cite{sivakami2015analysis}, with applications ranging from motor rehabilitation of spinal cord injury patients to neuroprosthetic control systems. The motor imagery (MI) paradigm is central to this context, as the mental simulation of movements recruits cortical circuits similar to those of actual motor execution \cite{tsou2025comparison}, requiring no physical movement.
+
+The primary neural marker of MI is \textbf{event-related desynchronization} (ERD), manifested as power attenuation in the sensorimotor bands \textbf{mu (8--13 Hz)} and \textbf{beta (13--30 Hz)} \cite{guo2024variation}. Despite decades of research, MI-based BCI systems still face a critical barrier to clinical and commercial viability: \textbf{inter-subject variability}. Cortical topology, resting-state rhythms, and ERD responses differ substantially across individuals \cite{duann2016comparison}, making model generalization to new users an open challenge.
+
+In practice, the vast majority of studies evaluate models on sessions from the \textit{same} subject, yielding artificially optimistic results that do not reflect real deployment performance. The transition from a within-subject model to a cross-subject scenario represents one of the main barriers to adopting BCIs outside the laboratory.
+
+\subsection{Gap in the Literature}
+
+Traditionally, MI pattern decoding relies on manual feature extraction techniques, where the \textbf{Common Spatial Patterns (CSP)} algorithm has established itself as the ``gold standard'' \cite{blankertz2008optimizing}. However, CSP-LDA presents limitations in the face of signal non-stationarity and difficulty capturing long-range temporal dependencies.
+
+In contrast, recent advances in Deep Learning have introduced \textbf{Convolutional Neural Networks (CNNs)} to the EEG domain, promising to learn optimal spatial and temporal representations directly from raw data, without manual feature engineering \cite{schirrmeister2017deep}. However, direct comparisons in the literature frequently incur data leakage --- by normalizing data using statistics from the complete dataset before the train/test split --- or use within-subject protocols that systematically overestimate performance.
+
+There is, therefore, no rigorous, contamination-free evaluation comparing CSP-LDA and EEGNet specifically under the LOSO protocol with an explicit data leakage prevention framework.
+
+\subsection{Hypothesis and Contributions}
+
+Based on the identified limitations, this work is grounded on the following central hypothesis:
+
+\begin{quote}
+\textit{In a Leave-One-Subject-Out validation scenario with limited data volume, the classical CSP-LDA classifier outperforms the compact EEGNet CNN architecture in motor imagery classification accuracy, due to its lower parametric capacity and inductive bias more aligned with EEG covariance structures.}
+\end{quote}
+
+The main contributions of this work are: (i) a leakage-free evaluation framework with normalization and temporal truncation rigorously contained within the cross-validation loop; (ii) a systematic cross-subject comparison between CSP-LDA and EEGNet under LOSO protocol on the \textit{BCI Competition IV-2a} \cite{tangermann2012review, brunner2008bci}, with per-subject analysis; and (iii) a stochastic robustness analysis with multiple random seeds to quantify the variance introduced by CNN training randomness.
+
+% =========================================================================
+% 2. RELATED WORK
+% =========================================================================
+\section{Related Work}
+
+\subsection{Classical Methods: CSP and Variants}
+
+Common Spatial Patterns (CSP) is a spatial filtering algorithm that maximizes the variance of one class while minimizing the variance of the other, through a joint diagonalization of covariance matrices \cite{blankertz2008optimizing}. Its combination with regularized LDA (shrinkage LDA) yields a classifier with excellent behavior in high-dimensionality, few-sample regimes --- precisely the context of clinical BCIs.
+
+\subsection{Deep Learning for EEG}
+
+Schirrmeister et al. \cite{schirrmeister2017deep} demonstrated that deep CNNs with temporal and spatial convolutions can learn filters equivalent to CSP from raw data. EEGNet \cite{lawhern2018eegnet}, proposed by Lawhern et al., represents a compact and general-purpose solution explicitly designed to operate in data-limited scenarios. Nevertheless, subsequent studies indicate that its advantage over classical methods only materializes consistently when sufficient data per class is available --- a condition rarely met in cross-subject protocols.
+
+\subsection{Inter-subject Variability and Evaluation Protocols}
+
+Duann and Chiou \cite{duann2016comparison} demonstrated that ERD responses vary in magnitude, latency, and topographic location across subjects. Within-subject protocols ignore this source of variance, inflating reported metrics. The LOSO protocol, by completely isolating one subject for testing, provides a more honest estimate of generalization capability --- and is particularly demanding for methods lacking domain adaptation mechanisms.
+
+% =========================================================================
+% 3. METHODOLOGY
+% =========================================================================
+\section{Methodology}
+
+The methodology was structured to ensure reproducibility and statistical validity, with a primary focus on preventing train/test contamination.
+
+\subsection{Experimental Setup}
+
+Figure \ref{fig:setup} summarizes the experiment parameters (dataset, subjects, classes, sampling rate, time window, and LOSO protocol), serving as a quick reference for study replication.
+
+\begin{figure}[!t]
+    \centering
+    \includegraphics[width=.92\columnwidth]{tabela_setup.png}
+    \caption{Experimental setup. Parameters adopted in the LOSO evaluation protocol, including sampling rate, trial duration (4 s), and total number of epochs.}
+    \label{fig:setup}
+\end{figure}
+
+\subsection{Data Acquisition and Preprocessing}
+
+The \textit{BCI Competition IV-2a} dataset is used, comprising recordings from 9 subjects. The implemented preprocessing pipeline consists of:
+
+\begin{enumerate}
+    \item \textbf{Temporal Filtering:} 4th-order Butterworth bandpass filter (8--30 Hz) using zero-phase technique to preserve potential latency.
+    \item \textbf{Resampling and Segmentation:} Signals resampled to 250 Hz and segmented into epochs (trials) corresponding to motor tasks (Left Hand vs. Right Hand).
+    \item \textbf{Dynamic Temporal Standardization:} Epoch truncation based on the minimum temporal length ($T_{min}$) observed strictly within the training set of each fold, avoiding padding artifacts.
+\end{enumerate}
+
+Figure \ref{fig:pipeline_comparison} presents the complete pipeline for both approaches.
+
+\begin{figure}[!t]
+    \centering
+    \includegraphics[width=.95\columnwidth]{pipeline_comparison.png}
+    \caption{Pipeline comparison. Processing flow for CSP+LDA (baseline) and EEGNet (CNN), highlighting: 8--30 Hz filtering, per-fold normalization, feature extraction (CSP/log-variance) vs. representation learning (convolutions).}
+    \label{fig:pipeline_comparison}
+\end{figure}
+
+\subsection{Data Leakage Prevention Framework}
+
+Z-score normalization is applied channel-by-channel, with mean ($\mu_{train}$) and standard deviation ($\sigma_{train}$) computed \textbf{exclusively} from the training set ($D_{train}$) of the current iteration:
+
+\begin{equation}
+    X'_{test} = \frac{X_{test} - \mu_{train}}{\sigma_{train}}
+\end{equation}
+
+This procedure ensures that the test data distribution remains completely unknown to the model during the fitting phase, simulating a real-time application and avoiding optimistic performance estimates.
+
+\subsection{Validation Protocol: LOSO}
+
+Inter-subject generalization is evaluated via the Leave-One-Subject-Out (LOSO) protocol. The dataset is partitioned into 9 folds: in each iteration, 8 subjects form the training set and 1 subject is held out for testing. This method is critical for validating model robustness against the high individual variability of EEG \cite{duann2016comparison}, and represents the most rigorous protocol for simulating performance with a completely new user.
+
+\subsection{Model Definitions}
+
+\textbf{CSP-LDA (Baseline):} Spatial projection maximizing class variance (CSP) followed by a linear classifier (LDA) with shrinkage regularization. Regularization is especially important in the LOSO scenario, where the sample-to-dimensionality ratio is unfavorable.
+
+\textbf{EEGNet (CNN):} Compact convolutional architecture for hierarchical extraction of temporal and spatial features \cite{lawhern2018eegnet}. Trained with Adam optimizer, early stopping with patience of 30 epochs, and dropout for regularization. Detailed hyperparameters are listed in Appendix A.
+
+Figure \ref{fig:eegnet_arch} illustrates the compact EEGNet architecture used.
+
+\begin{figure}[!t]
+    \centering
+    \includegraphics[width=.80\columnwidth]{eegnet_architecture.png}
+    \caption{EEGNet (compact) architecture. Layer flow diagram: input $\rightarrow$ temporal conv $\rightarrow$ depthwise+pool $\rightarrow$ separable conv+pool $\rightarrow$ flatten $\rightarrow$ softmax.}
+    \label{fig:eegnet_arch}
+\end{figure}
+
+% =========================================================================
+% 4. RESULTS
+% =========================================================================
+\section{Results}
+
+Table \ref{tab:resultados} presents the overall mean performance obtained via LOSO cross-validation. The classical CSP-LDA model demonstrated superiority in inter-subject generalization, corroborating the hypothesis formulated in Section 1.3.
+
+\begin{table}[!t]
+    \centering
+    \caption{Overall Performance (Mean $\pm$ Standard Deviation) via LOSO protocol. Values obtained using the safe normalization pipeline (No-Leakage).}
+    \label{tab:resultados}
+    \begin{tabular}{lcc}
+        \toprule
+        \textbf{Model} & \textbf{Mean Accuracy} & \textbf{Mean Kappa} \\
+        \midrule
+        CSP-LDA (Baseline) & $0.6057 \pm 0.0782$ & $0.2114 \pm 0.1564$ \\
+        EEGNet (CNN)       & $0.5062 \pm 0.0359$ & $0.0123 \pm 0.0718$ \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+Figure \ref{fig:summary_stats} presents the complete statistical summary (including minimum and maximum) in visual format.
+
+\begin{figure}[!t]
+    \centering
+    \includegraphics[width=.88\columnwidth]{tabela_resumo_estatistico.png}
+    \caption{Statistical summary (Mean, Standard Deviation, Minimum, and Maximum). Consolidated metrics for CSP and EEGNet under the LOSO protocol.}
+    \label{fig:summary_stats}
+\end{figure}
+
+Figure \ref{fig:metrics_distribution} presents the distribution of Accuracy and Kappa for CSP+LDA and EEGNet, including multiple random initializations (seeds). This visualization highlights: (i) greater robustness of CSP+LDA; and (ii) EEGNet sensitivity to training randomness, especially in low-subjects-per-fold regimes.
+
+\begin{figure}[!t]
+    \centering
+    \includegraphics[width=.95\columnwidth]{metrics_distribution.png}
+    \caption{Performance distribution by method. Accuracy and Kappa boxplots for CSP+LDA and EEGNet (with different seeds), highlighting inter-fold LOSO variability and the relative stability of the baseline.}
+    \label{fig:metrics_distribution}
+\end{figure}
+
+Figure \ref{fig:per_subject} details per-subject (fold) performance, allowing identification of cases where EEGNet approaches the baseline and cases where inter-subject generalization is particularly challenging.
+
+\begin{figure}[!t]
+    \centering
+    \includegraphics[width=.96\columnwidth]{tabela_resultados_sujeito.png}
+    \caption{Per-subject results (LOSO). Fold-by-fold comparison between CSP+LDA and EEGNet, including $\Delta$Accuracy and $\Delta$Kappa (EEGNet $-$ CSP).}
+    \label{fig:per_subject}
+\end{figure}
+
+Confusion matrix analysis (Figure \ref{fig:confusion_matrices}) suggests that EEGNet tends to exhibit greater class confusion (LEFT/RIGHT) in the aggregate, consistent with low inter-subject separability and/or difficulty learning stable representations with limited data per fold.
+
+\begin{figure}[!t]
+    \centering
+    \includegraphics[width=.95\columnwidth]{confusion_matrices.png}
+    \caption{Aggregated confusion matrices. Decision behavior comparison of CSP+LDA vs. EEGNet on the aggregated LOSO fold set.}
+    \label{fig:confusion_matrices}
+\end{figure}
+
+% =========================================================================
+% 5. DISCUSSION
+% =========================================================================
+\section{Discussion}
+
+The obtained results contradict the trend of immediate deep network superiority, elucidating critical challenges in implementing BCI systems robust to new users.
+
+\subsection{The Curse of Dimensionality and Data Scarcity}
+
+The superiority of CSP-LDA (Accuracy $\approx$ 60\%) over EEGNet under the LOSO protocol is attributed to the relationship between data volume and model complexity. The \textit{BCI Competition IV-2a} dataset has a limited number of examples per class. CNNs require large volumes to learn robust representations that generalize beyond the training distribution. The linear classifier (LDA) with shrinkage regularization, in turn, imposes strong inductive biases that prevent overfitting, maintaining generalization capacity for the unknown test subject.
+
+\subsection{Inter-subject Variability}
+
+EEGNet's near-chance performance suggests difficulty in finding a latent feature space invariant across subjects. As shown in \cite{duann2016comparison}, the topology and frequency of ERD responses vary significantly between individuals. CSP, by maximizing spatial variance in a pooled scenario, tends to find ``average'' spatial filters (C3/C4 dipoles) more stable than stochastic convolutional filters.
+
+\subsection{Sensitivity to Random Initialization}
+
+The multi-seed analysis revealed that EEGNet result variance is considerable across different initializations, especially in folds with subjects that are difficult to generalize to. CSP-LDA, being deterministic, does not exhibit this behavior. This result reinforces the need to report multiple seeds in Deep Learning evaluations for EEG --- a practice still rarely adopted in the literature.
+
+\subsection{Study Limitations}
+
+This work presents limitations that should be considered when interpreting the results: (i) scope restricted to binary classification (Left Hand vs. Right Hand), excluding the four available dataset classes; (ii) single-dataset evaluation, limiting the generalizability of conclusions; (iii) use of a single CNN architecture, not representing the full class of Deep Learning models; (iv) absence of domain adaptation techniques (e.g., Euclidean Alignment, Transfer Learning); and (v) no explicit removal of ocular or muscular artifacts (EOG/EMG) in the preprocessing pipeline.
+
+% =========================================================================
+% 6. CONCLUSION
+% =========================================================================
+\section{Conclusion}
+
+This work presented a systematic evaluation between classical methods and deep learning for motor imagery classification in a challenging Leave-One-Subject-Out cross-validation scenario, focusing on the correct implementation of a data leakage-free framework.
+
+The central hypothesis was confirmed: in the absence of advanced domain adaptation techniques and with limited data volume, classical covariance-based methods (CSP-LDA) offer greater robustness for new subjects than compact Deep Learning architectures trained from scratch. EEGNet failed to generalize inter-subject patterns in the restricted regime of the \textit{BCI Competition IV-2a}, with near-chance performance ($\kappa \approx 0.01$) and high sensitivity to random initialization.
+
+These results have relevant practical implications: BCI systems deployed on new users without individual calibration sessions demand approaches that explicitly address inter-subject variability.
+
+\subsection{Future Work}
+
+Based on the identified limitations, the following directions are proposed: (i) \textbf{Euclidean Alignment (EA)}: geometric alignment of covariance matrices, a low-computational-cost technique shown to improve cross-subject generalization without requiring test subject data; (ii) \textbf{Transfer Learning and Fine-tuning}: pre-training on large corpora of public EEG data (e.g., MOABB) followed by fine-tuning with few examples from the target subject; (iii) \textbf{Transformer-based Models}: architectures such as EEG-Conformer integrating multi-head attention mechanisms to capture long-range dependencies; (iv) \textbf{Artifact Removal}: incorporation of automatic EOG/EMG artifact removal via ICA into the pipeline; and (v) \textbf{Multi-class and Multi-dataset Evaluation}: extension to all four classes of \textit{BCI Competition IV-2a} and replication on independent datasets (PhysioNet, BCIC-III).
+
+% =========================================================================
+% REFERENCES
+% =========================================================================
+\bibliographystyle{IEEEtran}
+
+\begin{thebibliography}{10}
+
+\bibitem{blankertz2008optimizing}
+B. Blankertz et al., ``Optimizing spatial filters for robust EEG single-trial analysis,'' \textit{IEEE Signal Processing Magazine}, 2008.
+
+\bibitem{schirrmeister2017deep}
+R. T. Schirrmeister et al., ``Deep learning with convolutional neural networks for EEG decoding and visualization,'' \textit{Human Brain Mapping}, 2017.
+
+\bibitem{lawhern2018eegnet}
+V. J. Lawhern et al., ``EEGNet: a compact convolutional neural network for EEG-based brain-computer interfaces,'' \textit{Journal of Neural Engineering}, vol. 15, no. 5, p. 056013, 2018.
+
+\bibitem{tangermann2012review}
+M. Tangermann et al., ``Review of the BCI Competition IV,'' \textit{Frontiers in Neuroscience}, 2012.
+
+\bibitem{brunner2008bci}
+C. Brunner et al., ``BCI Competition 2008 -- Graz data set A,'' 2008.
+
+\bibitem{sivakami2015analysis}
+A. Sivakami and S. S. Devi, ``Analysis of EEG for Motor Imagery Based Classification of Hand Activities,'' \textit{IJBES}, 2015.
+
+\bibitem{duann2016comparison}
+J.-R. Duann and J.-C. Chiou, ``A comparison of independent event-related desynchronization responses in motor imagery and movement cessation,'' \textit{PLOS ONE}, 2016.
+
+\bibitem{wang2025research}
+Y. Wang, ``Research on Event-Related Desynchronization of Motor Imagery,'' \textit{arXiv}, 2025.
+
+\bibitem{tsou2025comparison}
+M.-H. Tsou et al., ``Comparison of Brain Activation Between Different Modes,'' \textit{Brain and Behavior}, 2025.
+
+\bibitem{guo2024variation}
+D. Guo et al., ``Variation in brain connectivity during motor imagery,'' \textit{Frontiers in Neuroscience}, 2024.
+
+\end{thebibliography}
+
+% =========================================================================
+% APPENDIX
+% =========================================================================
+\appendix
+\section{Hyperparameters and Configurations}
+\label{appendix:configs}
+
+To ensure reproducibility of the computational experiments, we detail below the hyperparameters used in EEGNet training and the preprocessing configurations.
+
+\subsection{Training Parameters (EEGNet)}
+
+\begin{table}[!t]
+    \centering
+    \caption{Neural Network Training Hyperparameters}
+    \begin{tabular}{ll}
+        \toprule
+        \textbf{Parameter} & \textbf{Value} \\
+        \midrule
+        Optimizer & Adam \\
+        Learning Rate & $1 \times 10^{-3}$ \\
+        Loss Function & CrossEntropyLoss \\
+        Batch Size & 64 \\
+        Max Epochs & 300 (with Early Stopping) \\
+        Early Stopping Patience & 30 epochs \\
+        Dropout (Dense Layers) & 0.5 \\
+        Dropout (Convolutional Layers) & 0.25 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\subsection{Preprocessing Parameters}
+
+\begin{itemize}
+    \item \textbf{Sampling Frequency (Final):} 250 Hz
+    \item \textbf{Bandpass Filter:} 4th-order Butterworth (8--30 Hz), zero-phase
+    \item \textbf{Time Window:} 0 s to 4 s (post-cue)
+    \item \textbf{EEG Channels:} 22 channels (standard 10-20 montage)
+    \item \textbf{Normalization:} Z-score (fit on train, transform on test)
+\end{itemize}
+
+\end{document}
