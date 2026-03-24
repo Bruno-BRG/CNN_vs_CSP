@@ -1,5 +1,5 @@
 """
-EEG Motor Imagery Classification — Leakage-Free Pipeline (BCICIV 2a)
+EEG Motor Imagery Classification — Leakage-Free Pipeline (BCICIV 2b)
 
 This script implements a full evaluation pipeline comparing the classical
 Common Spatial Patterns + Linear Discriminant Analysis (CSP-LDA) method
@@ -47,16 +47,16 @@ from tensorflow.keras.callbacks import EarlyStopping
 # ============================================================================
 
 def find_data_dir() -> Path:
-    """Locates data/raw/patients from the current directory or parents.
+    """Locates data/raw/patients_2b from the current directory or parents.
     Set DATA_DIR env var to override."""
     env_override = os.environ.get("DATA_DIR")
     if env_override:
         return Path(env_override).resolve()
 
     candidates = [
-        Path("data/raw/patients"),        # from project root
-        Path("../data/raw/patients"),     # from notebooks/ directory
-        Path(__file__).parent.parent / "data" / "raw" / "patients",  # relative to script
+        Path("data/raw/patients_2b"),        # from project root
+        Path("../data/raw/patients_2b"),     # from notebooks/ directory
+        Path(__file__).parent.parent / "data" / "raw" / "patients_2b",  # relative to script
     ]
     for candidate in candidates:
         if candidate.exists():
@@ -93,7 +93,7 @@ def apply_channel_stats(X: np.ndarray, mu: np.ndarray, sd: np.ndarray) -> np.nda
 
 
 def load_patient_csv(patient_id: int, data_dir: Path) -> pd.DataFrame:
-    fp = data_dir / f"BCICIV_2a_{patient_id}.csv"
+    fp = data_dir / f"BCICIV_2b_{patient_id}.csv"
     if not fp.exists():
         raise FileNotFoundError(f"File not found: {fp}")
     df = pd.read_csv(fp)
@@ -293,10 +293,10 @@ def plot_sample_trials(X_plot, y, label_value: int, eeg_cols, channels_to_plot,
     if use_filter:
         title_bits.append(f"{filter_low}-{filter_high}Hz")
     if use_normalization:
-        title_bits.append("z-score per trial")
+        title_bits.append("per-trial z-score")
     title = " + ".join(title_bits) if title_bits else "original"
 
-    fig.suptitle(f"Sample Trials — {label_name} ({title})", fontsize=12, fontweight='bold')
+    fig.suptitle(f"Trial Examples - {label_name} ({title})", fontsize=12, fontweight='bold')
 
     t = np.linspace(-0.1, 0.7, X_plot.shape[1])
 
@@ -346,7 +346,7 @@ def main(show_plots: bool = True, save_figures: bool = True):
     PATIENT_ID = 1  # used in visualization sections (does not affect LOSO)
 
     # Signal parameters
-    SFREQ = 250  # BCICIV 2a is typically 250 Hz
+    SFREQ = 250  # BCICIV 2b is typically 250 Hz
     FILTER_LOW = 8
     FILTER_HIGH = 30
     FILTER_ORDER = 4
@@ -363,7 +363,7 @@ def main(show_plots: bool = True, save_figures: bool = True):
     SHOW_PLOTS = show_plots
 
     # Visualization
-    CHANNELS_TO_PLOT = ['EEG-C3', 'EEG-Cz', 'EEG-C4']
+    CHANNELS_TO_PLOT = ['EEG-C3', 'EEG-C4', 'EEG-Cz']
     NUM_TRIALS_TO_PLOT = 6
     FIG_DPI = 300
 
@@ -433,10 +433,10 @@ def main(show_plots: bool = True, save_figures: bool = True):
     if USE_FILTER:
         title_bits.append(f"{FILTER_LOW}-{FILTER_HIGH}Hz")
     if USE_DATA_NORMALIZATION:
-        title_bits.append("z-score per trial")
+        title_bits.append("per-trial z-score")
     title = " + ".join(title_bits) if title_bits else "original"
 
-    fig.suptitle(f"Trial Means — RIGHT vs LEFT ({title})", fontsize=12, fontweight='bold')
+    fig.suptitle(f"Trial Means - RIGHT vs LEFT ({title})", fontsize=12, fontweight='bold')
 
     for i, ch in enumerate(channels_to_plot):
         ch_idx = eeg_columns.index(ch)
@@ -494,11 +494,11 @@ def main(show_plots: bool = True, save_figures: bool = True):
     # discover available patients (BCICIV_2a_1.csv ... BCICIV_2a_9.csv)
     available = []
     for pid in range(1, 10):
-        if (DATA_DIR / f"BCICIV_2a_{pid}.csv").exists():
+        if (DATA_DIR / f"BCICIV_2b_{pid}.csv").exists():
             available.append(pid)
 
     if not available:
-        raise FileNotFoundError(f"No BCICIV_2a_*.csv files found in {DATA_DIR.resolve()}")
+        raise FileNotFoundError(f"No BCICIV_2b_*.csv files found in {DATA_DIR.resolve()}")
 
     X_all = []
     y_all = []
@@ -938,7 +938,7 @@ def main(show_plots: bool = True, save_figures: bool = True):
         ('Butterworth Filter\n8-30 Hz', 'lightcyan'),
         ('Z-score Normalization\n(per fold)', 'lightyellow'),
         ('CSP\n8 components', 'lightgreen'),
-        ('Log-variance\nExtraction', 'lightgreen'),
+        ('Log-Variance\nExtraction', 'lightgreen'),
         ('LDA\nClassification', 'lightcoral'),
         ('Prediction', 'lightsalmon'),
     ]
@@ -959,14 +959,14 @@ def main(show_plots: bool = True, save_figures: bool = True):
     ax_eeg.set_xlim(0, 10)
     ax_eeg.set_ylim(0, 10)
     ax_eeg.axis('off')
-    ax_eeg.set_title('EEGNet (CNN)', fontsize=14, fontweight='bold', pad=20)
+    ax_eeg.set_title('EEGNet (CNN)', fontsize=14, fontweight='bold', pad=20)  # nome técnico, mantido
 
     y_pos = 9
     boxes_eeg = [
         ('Raw EEG\n(201 samples, 22 channels)', 'lightblue'),
         ('Butterworth Filter\n8-30 Hz', 'lightcyan'),
         ('Normalization\n(per fold)', 'lightyellow'),
-        ('Conv Temporal\n(F1=8 filters)', 'lightgreen'),
+        ('Temporal Conv\n(F1=8 filters)', 'lightgreen'),
         ('DepthwiseConv\n(n_ch,1) + Pool(1,4)', 'lightgreen'),
         ('SepConv(F2=16)\n+ Pool(1,8)', 'lightgreen'),
         ('Flatten + Dense\nClassification', 'lightcoral'),
@@ -1013,7 +1013,7 @@ def main(show_plots: bool = True, save_figures: bool = True):
     draw_arrow(ax, 6, 12.2, 6, y + 0.3)
 
     y -= 0.3
-    draw_block(ax, 6, y, 3.5, 0.7, 'Reshape\n→ (batch, 1, n_ch, n_times)', 'lightyellow')
+    draw_block(ax, 6, y, 3.5, 0.7, 'Reshape\n→ (batch, 1, n_ch, n_times)', 'lightyellow')  # termo técnico
 
     y -= 0.9
     draw_arrow(ax, 6, y + 0.65, 6, y + 0.35)
@@ -1185,7 +1185,7 @@ def main(show_plots: bool = True, save_figures: bool = True):
     ax = axes[0]
     sns.heatmap(cm_csp_total, annot=True, fmt='d', cmap='Blues', ax=ax,
                 cbar_kws={'label': 'Count'}, linewidths=2, linecolor='black')
-    ax.set_title('CSP+LDA - Confusion Matrix (Aggregated)', fontsize=12, fontweight='bold')
+    ax.set_title('CSP+LDA - Aggregated Confusion Matrix', fontsize=12, fontweight='bold')
     ax.set_xlabel('Predicted', fontsize=11)
     ax.set_ylabel('True', fontsize=11)
     ax.set_xticklabels(['LEFT', 'RIGHT'])
@@ -1200,7 +1200,7 @@ def main(show_plots: bool = True, save_figures: bool = True):
     ax = axes[1]
     sns.heatmap(cm_eeg_total, annot=True, fmt='d', cmap='Greens', ax=ax,
                 cbar_kws={'label': 'Count'}, linewidths=2, linecolor='black')
-    ax.set_title('EEGNet - Confusion Matrix (Aggregated)', fontsize=12, fontweight='bold')
+    ax.set_title('EEGNet - Aggregated Confusion Matrix', fontsize=12, fontweight='bold')
     ax.set_xlabel('Predicted', fontsize=11)
     ax.set_ylabel('True', fontsize=11)
     ax.set_xticklabels(['LEFT', 'RIGHT'])
@@ -1242,16 +1242,16 @@ def main(show_plots: bool = True, save_figures: bool = True):
             'Cross-validation',
         ],
         'Value': [
-            'BCICIV 2a',
+            'BCICIV 2b',
             f'{len(results_csp_lda)}',
             '2 (LEFT, RIGHT)',
             f'{SFREQ} Hz',
             f'{FILTER_LOW}-{FILTER_HIGH} Hz',
             f'{FILTER_ORDER}',
             '4s (201 samples)',
-            '1296 (9 subjects × 144 trials)',
+            f'{len(results_csp_lda) * 144} ({len(results_csp_lda)} subjects × 144 trials)',
             'Leave-One-Subject-Out (LOSO)',
-            '9 folds (1 per subject)',
+            f'{len(results_csp_lda)} folds (1 per subject)',
         ]
     }
 
@@ -1323,11 +1323,11 @@ def main(show_plots: bool = True, save_figures: bool = True):
 
         results_table.append({
             'Subject': subject,
-            'CSP Acc': f'{acc_csp:.4f}',
-            'CSP Kappa': f'{kappa_csp:.4f}',
-            'EEGNet Acc (μ±σ)': f'{acc_eeg_mean:.4f}±{acc_eeg_std:.4f}',
-            'EEGNet Kappa (μ±σ)': f'{kappa_eeg_mean:.4f}±{kappa_eeg_std:.4f}',
-            'Δ Acc': f'{acc_eeg_mean - acc_csp:+.4f}',
+            'CSP Accuracy': f'{acc_csp:.4f}',
+            'Kappa CSP': f'{kappa_csp:.4f}',
+            'EEGNet Accuracy (μ±σ)': f'{acc_eeg_mean:.4f}±{acc_eeg_std:.4f}',
+            'Kappa EEGNet (μ±σ)': f'{kappa_eeg_mean:.4f}±{kappa_eeg_std:.4f}',
+            'Δ Accuracy': f'{acc_eeg_mean - acc_csp:+.4f}',
             'Δ Kappa': f'{kappa_eeg_mean - kappa_csp:+.4f}',
         })
 
@@ -1367,7 +1367,7 @@ def main(show_plots: bool = True, save_figures: bool = True):
             else:
                 table[(i, j)].set_facecolor('#F2F2F2')
 
-    plt.title('Results per Subject: CSP+LDA vs EEGNet', fontsize=14, fontweight='bold', pad=20)
+    plt.title('Results by Subject: CSP+LDA vs EEGNet', fontsize=14, fontweight='bold', pad=20)
     if SAVE_FIGURES:
         plt.savefig(FIGURES_DIR / 'tabela_resultados_sujeito.png', dpi=FIG_DPI, bbox_inches='tight')
         print("Saved: tabela_resultados_sujeito.png")

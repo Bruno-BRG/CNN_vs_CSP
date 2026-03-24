@@ -1,5 +1,5 @@
 Parameter,Value
-Dataset,BCICIV 2a
+Dataset,BCICIV 2b
 Subjects,9
 Classes,"2 (LEFT, RIGHT)"
 Sampling Rate,250 Hz
